@@ -6,14 +6,25 @@ var fps = require('fps')
 var attractors = [[
     Infinity // x
   , Infinity // y
-  , 150 // dist
+  , 500 // dist
   , 0.25 // spd
 ]]
+//var attractors = [[
+//    50 // x
+// , 50 // y
+//  , 150 // dist
+//  , 0.25 // spd
+//]]
+
+var face = document.getElementById("face");
 
 var canvas = document.createElement('canvas')
   , ctx = canvas.getContext('2d')
   , boids = Boids({
-      boids: 150
+      boids: 100
+    , separationDistance: 200
+    , alignmentDistance: 400
+    , cohesionDistance: 400
     , speedLimit: 2
     , accelerationLimit: 0.5
     , attractors: attractors
@@ -45,7 +56,11 @@ ticker(window, 60).on('tick', function() {
     , halfHeight = canvas.height/2
     , halfWidth = canvas.width/2
 
-  ctx.fillStyle = 'rgba(255,241,235,0.25)' // '#FFF1EB'
+  var fWidth = 60;
+  var fHeight = (face.height / face.width) * fWidth;
+  
+  //ctx.fillStyle = 'rgba(255,241,235,0.25)' // '#FFF1EB'
+  ctx.fillStyle = '#ffffff' // '#FFF1EB'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   ctx.fillStyle = '#543D5E'
@@ -54,7 +69,8 @@ ticker(window, 60).on('tick', function() {
     // wrap around the screen
     boidData[i][0] = x > halfWidth ? -halfWidth : -x > halfWidth ? halfWidth : x
     boidData[i][1] = y > halfHeight ? -halfHeight : -y > halfHeight ? halfHeight : y
-    ctx.fillRect(x + halfWidth, y + halfHeight, 2, 2)
+    //ctx.fillRect(x + halfWidth, y + halfHeight, 2, 2)
+    ctx.drawImage(face, x + halfWidth, y + halfHeight, fWidth, fHeight);
   }
 })
 
@@ -63,7 +79,7 @@ var countText = document.querySelector('[data-count]')
 var frames = fps({ every: 10, decay: 0.04 }).on('data', function(rate) {
   for (var i = 0; i < 3; i += 1) {
     if (rate <= 56 && boids.boids.length > 10) boids.boids.pop()
-    if (rate >= 60 && boids.boids.length < 500) boids.boids.push([0,0,Math.random()*6-3,Math.random()*6-3,0,0])
+    if (rate >= 60 && boids.boids.length < 1000) boids.boids.push([0,0,Math.random()*6-3,Math.random()*6-3,0,0])
   }
   frameText.innerHTML = String(Math.round(rate))
   countText.innerHTML = String(boids.boids.length)

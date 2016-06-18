@@ -7,14 +7,25 @@ var fps = require('fps')
 var attractors = [[
     Infinity // x
   , Infinity // y
-  , 150 // dist
+  , 500 // dist
   , 0.25 // spd
 ]]
+//var attractors = [[
+//    50 // x
+// , 50 // y
+//  , 150 // dist
+//  , 0.25 // spd
+//]]
+
+var face = document.getElementById("face");
 
 var canvas = document.createElement('canvas')
   , ctx = canvas.getContext('2d')
   , boids = Boids({
-      boids: 150
+      boids: 100
+    , separationDistance: 200
+    , alignmentDistance: 400
+    , cohesionDistance: 400
     , speedLimit: 2
     , accelerationLimit: 0.5
     , attractors: attractors
@@ -46,7 +57,11 @@ ticker(window, 60).on('tick', function() {
     , halfHeight = canvas.height/2
     , halfWidth = canvas.width/2
 
-  ctx.fillStyle = 'rgba(255,241,235,0.25)' // '#FFF1EB'
+  var fWidth = 60;
+  var fHeight = (face.height / face.width) * fWidth;
+  
+  //ctx.fillStyle = 'rgba(255,241,235,0.25)' // '#FFF1EB'
+  ctx.fillStyle = '#ffffff' // '#FFF1EB'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   ctx.fillStyle = '#543D5E'
@@ -55,7 +70,8 @@ ticker(window, 60).on('tick', function() {
     // wrap around the screen
     boidData[i][0] = x > halfWidth ? -halfWidth : -x > halfWidth ? halfWidth : x
     boidData[i][1] = y > halfHeight ? -halfHeight : -y > halfHeight ? halfHeight : y
-    ctx.fillRect(x + halfWidth, y + halfHeight, 2, 2)
+    //ctx.fillRect(x + halfWidth, y + halfHeight, 2, 2)
+    ctx.drawImage(face, x + halfWidth, y + halfHeight, fWidth, fHeight);
   }
 })
 
@@ -64,14 +80,13 @@ var countText = document.querySelector('[data-count]')
 var frames = fps({ every: 10, decay: 0.04 }).on('data', function(rate) {
   for (var i = 0; i < 3; i += 1) {
     if (rate <= 56 && boids.boids.length > 10) boids.boids.pop()
-    if (rate >= 60 && boids.boids.length < 500) boids.boids.push([0,0,Math.random()*6-3,Math.random()*6-3,0,0])
+    if (rate >= 60 && boids.boids.length < 1000) boids.boids.push([0,0,Math.random()*6-3,Math.random()*6-3,0,0])
   }
   frameText.innerHTML = String(Math.round(rate))
   countText.innerHTML = String(boids.boids.length)
 })
 
-},{"fps":2,"ticker":3,"./":4,"debounce":5}],5:[function(require,module,exports){
-
+},{"fps":2,"debounce":3,"ticker":4,"./":5}],3:[function(require,module,exports){
 /**
  * Debounces a function by the given threshold.
  *
@@ -94,7 +109,7 @@ module.exports = function debounce(func, threshold, execAsap){
         func.apply(obj, args);
       }
       timeout = null;
-    };
+    }
 
     if (timeout) {
       clearTimeout(timeout);
@@ -125,7 +140,8 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
@@ -346,7 +362,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":6}],4:[function(require,module,exports){
+},{"__browserify_process":6}],5:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , inherits = require('inherits')
   , sqrt = Math.sqrt
@@ -508,38 +524,7 @@ Boids.prototype.tick = function() {
   this.emit('tick', boids)
 }
 
-},{"events":7,"inherits":8}],8:[function(require,module,exports){
-module.exports = inherits
-
-function inherits (c, p, proto) {
-  proto = proto || {}
-  var e = {}
-  ;[c.prototype, proto].forEach(function (s) {
-    Object.getOwnPropertyNames(s).forEach(function (k) {
-      e[k] = Object.getOwnPropertyDescriptor(s, k)
-    })
-  })
-  c.prototype = Object.create(p.prototype, e)
-  c.super = p
-}
-
-//function Child () {
-//  Child.super.call(this)
-//  console.error([this
-//                ,this.constructor
-//                ,this.constructor === Child
-//                ,this.constructor.super === Parent
-//                ,Object.getPrototypeOf(this) === Child.prototype
-//                ,Object.getPrototypeOf(Object.getPrototypeOf(this))
-//                 === Parent.prototype
-//                ,this instanceof Child
-//                ,this instanceof Parent])
-//}
-//function Parent () {}
-//inherits(Child, Parent)
-//new Child
-
-},{}],2:[function(require,module,exports){
+},{"events":7,"inherits":8}],2:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , inherits = require('inherits')
 
@@ -580,7 +565,38 @@ fps.prototype.tick = function() {
 }
 
 
-},{"events":7,"inherits":8}],3:[function(require,module,exports){
+},{"events":7,"inherits":8}],8:[function(require,module,exports){
+module.exports = inherits
+
+function inherits (c, p, proto) {
+  proto = proto || {}
+  var e = {}
+  ;[c.prototype, proto].forEach(function (s) {
+    Object.getOwnPropertyNames(s).forEach(function (k) {
+      e[k] = Object.getOwnPropertyDescriptor(s, k)
+    })
+  })
+  c.prototype = Object.create(p.prototype, e)
+  c.super = p
+}
+
+//function Child () {
+//  Child.super.call(this)
+//  console.error([this
+//                ,this.constructor
+//                ,this.constructor === Child
+//                ,this.constructor.super === Parent
+//                ,Object.getPrototypeOf(this) === Child.prototype
+//                ,Object.getPrototypeOf(Object.getPrototypeOf(this))
+//                 === Parent.prototype
+//                ,this instanceof Child
+//                ,this instanceof Parent])
+//}
+//function Parent () {}
+//inherits(Child, Parent)
+//new Child
+
+},{}],4:[function(require,module,exports){
 var raf = require('raf')
   , EventEmitter = require('events').EventEmitter
 
