@@ -565,7 +565,36 @@ fps.prototype.tick = function() {
 }
 
 
-},{"events":7,"inherits":8}],8:[function(require,module,exports){
+},{"events":7,"inherits":8}],4:[function(require,module,exports){
+var raf = require('raf')
+  , EventEmitter = require('events').EventEmitter
+
+module.exports = ticker
+
+function ticker(element, rate, limit) {
+  var millisecondsPerFrame = 1000 / (rate || 60)
+    , time = 0
+    , emitter
+
+  limit = arguments.length > 2 ? +limit + 1 : 2
+  emitter = raf(element || window).on('data', function(dt) {
+    var n = limit
+
+    time += dt
+    while (time > millisecondsPerFrame && n) {
+      time -= millisecondsPerFrame
+      n -= 1
+      emitter.emit('tick')
+    }
+    time = (time + millisecondsPerFrame * 1000) % millisecondsPerFrame
+
+    if (n !== limit) emitter.emit('draw')
+  })
+
+  return emitter
+}
+
+},{"events":7,"raf":9}],8:[function(require,module,exports){
 module.exports = inherits
 
 function inherits (c, p, proto) {
@@ -596,36 +625,7 @@ function inherits (c, p, proto) {
 //inherits(Child, Parent)
 //new Child
 
-},{}],4:[function(require,module,exports){
-var raf = require('raf')
-  , EventEmitter = require('events').EventEmitter
-
-module.exports = ticker
-
-function ticker(element, rate, limit) {
-  var millisecondsPerFrame = 1000 / (rate || 60)
-    , time = 0
-    , emitter
-
-  limit = arguments.length > 2 ? +limit + 1 : 2
-  emitter = raf(element || window).on('data', function(dt) {
-    var n = limit
-
-    time += dt
-    while (time > millisecondsPerFrame && n) {
-      time -= millisecondsPerFrame
-      n -= 1
-      emitter.emit('tick')
-    }
-    time = (time + millisecondsPerFrame * 1000) % millisecondsPerFrame
-
-    if (n !== limit) emitter.emit('draw')
-  })
-
-  return emitter
-}
-
-},{"events":7,"raf":9}],9:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function(){module.exports = raf
 
 var EE = require('events').EventEmitter
